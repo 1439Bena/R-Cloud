@@ -20,12 +20,18 @@ public class AccountInfoService {
         return dao.selectByPageCount(accountInfo);
     }
     public int SignAccount(AccountInfo accountInfo){
-        return dao.addAccount(accountInfo);
+        return dao.SignUpAccount(accountInfo);
+    }
+    public AccountInfo SignInAccount(AccountInfo accountInfo){
+        return dao.SignInAccount(accountInfo);
     }
     public int UpdateStatu(String uid, int statu){
         return dao.updateAstatus(uid,statu);
     }
     public int UpdateAccountInfo(AccountInfo accountInfo){
         return dao.updateAccount(accountInfo);
+    }
+    public int AddAccount(AccountInfo accountInfo){
+        return dao.addAccount(accountInfo);
     }
 }

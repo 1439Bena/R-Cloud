@@ -1,6 +1,7 @@
 package com.dao.impl;
 
 import com.bean.AccountInfo;
+import com.bean.UserInfo;
 import com.dao.AccountDao;
 import com.utils.Dbutils;
 import com.utils.impl.ImageUtils;
@@ -38,6 +39,73 @@ public class AccountDaoImpl implements AccountDao {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+    @Override
+    public int SignUpAccount(AccountInfo accountInfo){
+        String sql = "insert into Accountinfo(Uid,Username,Password,Email,Registrationtime,Astatus) " +
+                " values(?,?,?,?,?,?)";
+        Object[] params = {
+                accountInfo.getUid(),
+                accountInfo.getUsername(),
+                accountInfo.getPassword(),
+                accountInfo.getEmail(),
+                accountInfo.getRegistrationtime(),
+                accountInfo.getAstatus(),
+        };
+
+        try {
+            return util.executeUpdate(sql, params);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    @Override
+    public AccountInfo SignInAccount(AccountInfo accountInfo){
+        AccountInfo account = new AccountInfo();
+        String sql = "select Accountinfo.*, UserInfo.Nickname from Accountinfo join UserInfo on Accountinfo.Uid = UserInfo.UserUid where Username = ? and Password = ?";
+        Object[] params= {
+                accountInfo.getUsername(),
+                accountInfo.getPassword()
+        };
+        ResultSet rs;
+        try {
+            rs = util.executeQuery(sql,params);
+
+            if (rs.next()){
+                String uid = rs.getString(1);
+                String username = rs.getString(2);
+                String pwd = rs.getString(3);
+                byte[] avatar = rs.getBytes(4);
+                String email = rs.getString(5);
+                String aphone = rs.getString(6);
+                Timestamp rsgistrationtime = rs.getTimestamp(7);
+                Integer astatus = rs.getInt(8);
+                String nickname =rs.getString(9);
+
+                UserInfo userInfo =new UserInfo();
+                userInfo.setNickname(nickname);
+
+                PackageAccountInfo(account, uid, username, pwd, avatar, email, aphone, rsgistrationtime, astatus);
+                account.setUserinfo(userInfo);
+
+                return account;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+
+    private void PackageAccountInfo(AccountInfo account, String uid, String username, String pwd, byte[] avatar, String email, String aphone, Timestamp rsgistrationtime, Integer astatus) {
+        account.setUid(uid);
+        account.setUsername(username);
+        account.setPassword(pwd);
+        if (avatar != null)
+            account.setAvatar(new ImageUtils().byteToString(avatar));
+        account.setEmail(email);
+        account.setAphone(aphone);
+        account.setRegistrationtime(rsgistrationtime.toLocalDateTime());
+        account.setAstatus(astatus);
     }
 
     @Override
@@ -105,15 +173,7 @@ public class AccountDaoImpl implements AccountDao {
 
                 AccountInfo account = new AccountInfo();
 
-                account.setUid(uid);
-                account.setUsername(username);
-                account.setPassword(pwd);
-                if (avatar != null)
-                    account.setAvatar(new ImageUtils().byteToString(avatar));
-                account.setEmail(email);
-                account.setAphone(aphone);
-                account.setRegistrationtime(rsgistrationtime.toLocalDateTime());
-                account.setAstatus(astatus);
+                PackageAccountInfo(account, uid, username, pwd, avatar, email, aphone, rsgistrationtime, astatus);
 
                 accounts.add(account);
             }

@@ -3,14 +3,14 @@ package com.controller.admin;
 
 import com.bean.AccountInfo;
 import com.bean.UserInfo;
+import com.controller.admin.pojo.AccountInfoData;
 import com.controller.base.BaseController;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.service.AccountInfoService;
 import com.service.UserInfoService;
 import com.utils.RandomUtils;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -26,15 +26,15 @@ import java.util.List;
 @RestController
 public class AccountController extends BaseController {
     @RequestMapping("/AddAccount")
-    protected String doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected String AddAccount(@RequestBody AccountInfoData data){
         try {
-            String json=ReadJson(request);
 
-            AccountInfo accountInfo = new Gson().fromJson(json, AccountInfo.class);
+            AccountInfo accountInfo = new AccountInfo(data.getUid(),data.getUsername(),data.getPassword(),data.getAvatar(),data.getEmail(),data.getAphone(),null,0,null);
+
             accountInfo.setUid("Rb_" + RandomUtils.GetRandomNumber(8, 0, 9));
             accountInfo.setAstatus(0);
             accountInfo.setRegistrationtime(LocalDateTime.now());
-            int row = new AccountInfoService().SignAccount(accountInfo);
+            int row = new AccountInfoService().AddAccount(accountInfo);
             UserInfo userInfo=new UserInfo();
             userInfo.setUseruid(accountInfo.getUid());
             userInfo.setNickname("用户_" + RandomUtils.GetRandomNumber(8,0,9));
@@ -48,7 +48,7 @@ public class AccountController extends BaseController {
         }
     }
     @RequestMapping("/GetAccount")
-    protected String GetAccount(@RequestParam(value = "username", required = false)  String username,@RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "email", required = false) String email, @RequestParam("page") int page, @RequestParam("limit") int limit) throws ServletException, IOException {
+    protected String GetAccount(@RequestParam(value = "likeusername", required = false)  String username,@RequestParam(value = "likephone", required = false) String phone, @RequestParam(value = "likeemail", required = false) String email, @RequestParam("page") int page, @RequestParam("limit") int limit) throws ServletException, IOException {
 
         AccountInfo accountInfo=new AccountInfo();
         accountInfo.setUsername(username);
@@ -60,18 +60,16 @@ public class AccountController extends BaseController {
 
        return print(pageVo(count,accounts));
     }
-    @RequestMapping("/UpdateAccount")
-    protected String UpdateAccount(HttpServletRequest request) throws IOException {
-        String json=ReadJson(request);
+    @PostMapping("/UpdateAccount")
+    protected String UpdateAccount(@RequestBody AccountInfoData data) throws IOException {
 
-        AccountInfo accountInfo = new Gson().fromJson(json, AccountInfo.class);
-        accountInfo.setAstatus(0);
+        AccountInfo accountInfo = new AccountInfo(data.getUid(),data.getUsername(),data.getPassword(),data.getAvatar(),data.getEmail(),data.getAphone(),null,0,null);
 
         int row=new AccountInfoService().UpdateAccountInfo(accountInfo);
         if (row > 0)
            return print(successJson(null));
         else
-           return print(errorJson(500, "error", null));
+           return print(errorJson());
     }
     @RequestMapping("/UpdateStatu")
     protected String UpdateStatu(@RequestParam("uid") String uid, @RequestParam("statu") int statu) throws IOException {
@@ -83,8 +81,9 @@ public class AccountController extends BaseController {
            return print(errorJson());
     }
     @RequestMapping("/UploadAvatar")
-    protected String UploadAvatar(@RequestParam("head") byte[] avatar) throws ServletException, IOException {
-        String head=byteToString(avatar);
+    protected String UploadAvatar(HttpServletRequest request) throws IOException, ServletException {
+        byte[] avatar = partToBytes(request,"head");
+        String head = byteToString(avatar);
         return print(successJson(head));
     }
 }

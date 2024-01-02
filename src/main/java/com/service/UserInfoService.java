@@ -21,4 +21,7 @@ public class UserInfoService {
     public Long getUserCount(UserInfo userInfo){
         return dao.selectByPageCount(userInfo);
     }
+    public int UpdateUser(UserInfo userInfo){
+        return dao.updateUserInfo(userInfo);
+    }
 }

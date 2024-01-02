@@ -17,6 +17,7 @@ public class AccessControlAllowOriginFilter {
         config.addAllowedOrigin("*");//*表示允许所有
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
+        config.setAllowCredentials(true);
         source.registerCorsConfiguration("/**", config); // CORS 配置对所有接口都有效
         FilterRegistrationBean bean = new FilterRegistrationBean(new CorsFilter(source));
         bean.setOrder(0);

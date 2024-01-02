@@ -40,7 +40,20 @@ public class UserInfoDaoImpl implements UserInfoDao {
 
     @Override
     public int updateUserInfo(UserInfo userInfo) {
-        return 0;
+        String sql = "update UserInfo set Nickname = ?,gender = ?,birthday = ?,location = ?,bio = ? where UserUid = ?";
+        Object[] params ={
+            userInfo.getNickname(),
+            userInfo.getGender(),
+            userInfo.getBirthday(),
+            userInfo.getLocation(),
+            userInfo.getBio(),
+            userInfo.getUseruid()
+        };
+        try {
+            return util.executeUpdate(sql,params);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -53,16 +66,7 @@ public class UserInfoDaoImpl implements UserInfoDao {
 
         List<Object> params = new ArrayList<>();
 
-        if (userInfo != null && userInfo.getNickname() != null && !"".equals(userInfo.getNickname().trim())) {
-            sql.append(" and Nickname like ?");
-
-            params.add("%" + userInfo.getNickname() + "%");
-        }
-        if (userInfo != null && userInfo.getGender() != null && !"".equals(userInfo.getGender().trim())) {
-            sql.append(" and gender = ?");
-
-            params.add(userInfo.getGender());
-        }
+        Params(userInfo, sql, params);
 
         sql.append(") as t");
         sql.append(" where rownum between ? and ?");
@@ -110,16 +114,20 @@ public class UserInfoDaoImpl implements UserInfoDao {
         StringBuilder sql = new StringBuilder("select count(UserUid) from Userinfo where 1=1");
 
         List<Object> params = new ArrayList<Object>();
+        Params(userInfo, sql, params);
+        return getaLong(count, sql, params, util);
+    }
+
+    private void Params(UserInfo userInfo, StringBuilder sql, List<Object> params) {
         if (userInfo != null && userInfo.getNickname() != null && !"".equals(userInfo.getNickname().trim())) {
             sql.append(" and Nickname like ?");
 
             params.add("%" + userInfo.getNickname() + "%");
         }
         if (userInfo != null && userInfo.getGender() != null && !"".equals(userInfo.getGender().trim())) {
-            sql.append(" and gender = ?");
+            sql.append(" and gender like ?");
 
-            params.add(userInfo.getGender());
+            params.add("%" + userInfo.getGender() + "%");
         }
-        return getaLong(count, sql, params, util);
     }
 }

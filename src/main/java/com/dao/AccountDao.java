@@ -17,6 +17,10 @@ public interface AccountDao {
      */
     int addAccount(AccountInfo accountInfo);
 
+    int SignUpAccount(AccountInfo accountInfo);
+
+    AccountInfo SignInAccount(AccountInfo accountInfo);
+
     /**
      * 修改账号信息
      * @param accountInfo
