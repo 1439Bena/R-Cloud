@@ -7,6 +7,8 @@ import com.utils.RandomUtils;
 import com.utils.Video;
 import com.vo.PageVo;
 import com.vo.ResponseData;
+import com.vo.VideoRes;
+import com.vo.VideoVo;
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.SimpleEmail;
 
@@ -120,11 +122,11 @@ public abstract class BaseController implements Image, Email, Video {
      */
     @Override
     public String StoreVideo(HttpServletRequest request, String file) throws ServletException, IOException {
-        Part filePart = request.getPart("video"); // 获取上传的文件
+        Part filePart = request.getPart(file); // 获取上传的文件
         String fileName = filePart.getSubmittedFileName(); // 获取文件名
         InputStream fileContent = filePart.getInputStream(); // 获取文件内容
 
-        String filepath = "static/video" + "/" + fileName;
+        String filepath = "video" + "/" + fileName;
         String realpath = request.getServletContext().getRealPath(filepath);
         // 将文件保存到服务器的某个位置
         File targetFile = new File(realpath);
@@ -198,9 +200,14 @@ public abstract class BaseController implements Image, Email, Video {
 
     public String print(ResponseData responseData) throws IOException {
         // out.println(new Gson().toJson(responseData));
-        return new GsonBuilder().setDateFormat("yyyy-MM-dd hh:mm:ss")
+        return new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss")
                 .create()
                 .toJson(responseData);
+    }
+    public String pring(VideoRes videoRes){
+        return new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss")
+                .create()
+                .toJson(videoRes);
     }
 
     /**
@@ -212,4 +219,8 @@ public abstract class BaseController implements Image, Email, Video {
     public PageVo pageVo(Long count, Object data) {
         return new PageVo(200,"success",data,count) ;
     }
+
+    public VideoVo videoVo(String url){ return new VideoVo(url);}
+
+    public VideoRes successUploadVideo(String url){return new VideoRes(0,videoVo(url));}
 }

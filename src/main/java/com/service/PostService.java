@@ -13,17 +13,20 @@ import java.util.List;
 public class PostService {
     final PostDao dao = new PostDaoImpl();
 
-    public List<Post> GetPost(String key, Integer page, Integer limit) {
-        return dao.selectByPage(key, page, limit);
+    public List<Post> GetPost(Integer page, Integer limit) {
+        return dao.selectByPage(page, limit);
     }
     public List<Post> GetComments(String cparentid){
         return dao.selectComments(cparentid);
     }
-    public long GetPostCount(String key){
-        return dao.selectByPageCount(key);
+    public long GetPostCount(){
+        return dao.selectByPageCount();
     }
     public Post PostInfo(String pid){
         return dao.selectPost(pid);
     }
     public long GetCommentsCount(String pid){return dao.selectCommentsCount(pid); }
+    public int PubPost(Post post){
+        return dao.add(post);
+    }
 }

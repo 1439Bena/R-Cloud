@@ -25,19 +25,36 @@ public class PostDaoImpl implements PostDao {
 
     @Override
     public int add(Post post) {
-        String sql = "insert into Post " +
-                "values(?,?,?,?,?,?,?,?,?)";
-        Object[] params = {
-                post.getPid(),
-                post.getPcontent(),
-                new ImageUtils().stringTobyte(post.getPimage()),
-                post.getPvideo(),
-                post.getUserInfo().getUseruid(),
-                post.getParentid(),
-                post.getPtime(),
-                post.getPtags(),
-                post.getPstatus()
-        };
+        String sql = "";
+        Object[] params;
+        if (post.getPimage() != null) {
+            sql = "insert into Post " +
+                    "values(?,?,?,?,?,?,?,?,?)";
+            params = new Object[]{
+                    post.getPid(),
+                    post.getPcontent(),
+                    new ImageUtils().stringTobyte(post.getPimage()),
+                    post.getPvideo(),
+                    post.getPublishaccountInfo().getUid(),
+                    post.getParentid(),
+                    post.getPtime(),
+                    post.getPtags(),
+                    post.getPstatus()
+            };
+        } else {
+            sql = "insert into Post(Pid, Pcontent, Pvideo, Publisher, Parentid, Ptime, Ptags, Pstatus) " +
+                    "values(?,?,?,?,?,?,?,?)";
+            params = new Object[]{
+                    post.getPid(),
+                    post.getPcontent(),
+                    post.getPvideo(),
+                    post.getPublishaccountInfo().getUid(),
+                    post.getParentid(),
+                    post.getPtime(),
+                    post.getPtags(),
+                    post.getPstatus()
+            };
+        }
 
         try {
             return util.executeUpdate(sql, params);
@@ -58,35 +75,36 @@ public class PostDaoImpl implements PostDao {
     }
 
     @Override
-    public List<Post> selectByPage(String key, Integer page, Integer limit) {
+    public List<Post> selectByPage(Integer page, Integer limit) {
         List<Post> posts = new ArrayList<>();
 
-        StringBuilder sql = new StringBuilder("select * from ( ");
-        sql.append("select Post.*, UserInfo.UserUid, UserInfo.Nickname, Accountinfo.Username,Accountinfo.Avatar,row_number() over(order by Pid) as rownum from Post join UserInfo on Post.Publisher = UserInfo.UserUid join Accountinfo on Post.Publisher = Accountinfo.Uid");
-        sql.append(" where Parentid is null and Pstatus = '正常'");
+        StringBuilder sql = new StringBuilder();
+        sql.append("WITH RandomizedPosts AS ( ");
+        sql.append("    SELECT P.Pid, CAST(P.Pcontent AS NVARCHAR(MAX)) AS Pcontent, P.PImage, P.Pvideo, P.Publisher, ");
+        sql.append("           P.Parentid, P.Ptime, P.Ptags, P.Pstatus, ");
+        sql.append("           U.UserUid, U.Nickname, A.Username, A.Avatar, ");
+        sql.append("           ROW_NUMBER() OVER (ORDER BY RAND(CHECKSUM(NEWID()))) AS rowNumber ");
+        sql.append("    FROM Post P ");
+        sql.append("    JOIN UserInfo U ON P.Publisher = U.UserUid ");
+        sql.append("    JOIN Accountinfo A ON U.UserUid = A.Uid ");
+        sql.append("    WHERE P.Parentid IS NULL ");
+        sql.append("      AND P.Pstatus = '正常' ");
+        sql.append("      AND P.Pid NOT IN (SELECT TOP 10 A.Pid FROM Post A ORDER BY NEWID()) ");
+        sql.append("    GROUP BY P.Pid, CAST(P.Pcontent AS NVARCHAR(MAX)), P.PImage, P.Pvideo, P.Publisher, P.Parentid, P.Ptime, P.Ptags, P.Pstatus, U.UserUid, U.Nickname, A.Username, A.Avatar ");
+        sql.append(") ");
+        sql.append("SELECT * ");
+        sql.append("FROM ( ");
+        sql.append("    SELECT *, ROW_NUMBER() OVER (ORDER BY rowNumber) AS rowIndex ");
+        sql.append("    FROM RandomizedPosts ");
+        sql.append(") AS SubQuery ");
+        sql.append("WHERE rowIndex BETWEEN ? AND ? ");
+        sql.append("ORDER BY Ptime DESC");
 
-        // 1.定义集合，用于存储 SQL 语句的 ？占位符的参数值
-        List<Object> params = new ArrayList<Object>();
-
-        // 2.拼接SQL语句
-        if (key != null && !"".equals(key.trim())) {
-            sql.append(" and UserInfo.Nickname like ?");
-            // 添加条件参数1
-            params.add("%" + key + "%");
-        }
-
-        if (key != null && !"".equals(key.trim())) {
-            sql.append(" and Pcontent like ?");
-            // 添加条件参数2
-            params.add("%" + key + "%");
-        }
-
-        sql.append(") as t");
-        sql.append(" where rownum between  ? and ?");
-
-        // 添加分页参数
+        List<Object> params = new ArrayList<>();
+// 添加分页参数
         params.add((page - 1) * limit + 1);
         params.add(page * limit);
+
 
         ResultSet rs;
         try {
@@ -131,26 +149,13 @@ public class PostDaoImpl implements PostDao {
     }
 
     @Override
-    public Long selectByPageCount(String key) {
+    public Long selectByPageCount() {
         Long count = 0L;
 
         // 第一：定义要操作数据库的SQL语句 - 动态多条件查询
         StringBuilder sql = new StringBuilder("select count(Pid) from Post where Parentid is null and Pstatus='正常'");
 
         List<Object> params = new ArrayList<Object>();
-
-        // 2.拼接SQL语句
-        if (key != null && !"".equals(key.trim())) {
-            sql.append(" and UserInfo.Nickname like ?");
-            // 添加条件参数1
-            params.add("%" + key + "%");
-        }
-
-        if (key != null && !"".equals(key.trim())) {
-            sql.append(" and Pcontent like ?");
-            // 添加条件参数2
-            params.add("%" + key + "%");
-        }
 
         return getaLong(count, sql, params, util);
     }

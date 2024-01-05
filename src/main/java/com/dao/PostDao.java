@@ -26,14 +26,14 @@ public interface PostDao {
      * @param limit 每页显示记录数
      * @return
      */
-    List<Post> selectByPage(String key, Integer page, Integer limit);
+    List<Post> selectByPage(Integer page, Integer limit);
 
     /**
      * 动态条件 + 分页查询 - 总记录数
      * @param key
      * @return
      */
-    Long selectByPageCount(String key);
+    Long selectByPageCount();
 
     /**
      * 查询帖子评论的总数
@@ -50,4 +50,5 @@ public interface PostDao {
     List<Post> selectComments(String parentid);
 
     Post selectPost(String pid);
+
 }

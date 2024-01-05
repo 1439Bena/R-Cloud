@@ -56,6 +56,4 @@ public class ImageUtils implements Image {
     public byte[] stringTobyte(String imagestring) {
         return Base64.getDecoder().decode(imagestring);
     }
-
-
 }
