@@ -13,5 +13,5 @@ public interface PostInfoDao {
      * @param pid
      * @return
      */
-    PostInfo selectPostInfo(String pid);
+    PostInfo selectPostInfo(String pid,String uid);
 }

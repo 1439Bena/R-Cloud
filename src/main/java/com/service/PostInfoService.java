@@ -10,7 +10,7 @@ import com.dao.impl.PostInfoDaoImpl;
 public class PostInfoService {
     final PostInfoDaoImpl dao = new PostInfoDaoImpl();
 
-    public PostInfo selectLikesAndCommentsCount(String pid) {
-        return dao.selectPostInfo(pid);
+    public PostInfo selectLikesAndCommentsCount(String pid, String uid) {
+        return dao.selectPostInfo(pid,uid);
     }
 }

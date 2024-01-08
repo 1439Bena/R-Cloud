@@ -7,6 +7,7 @@ package com.bean;
 public class PostInfo {
     private long likes;
     private long commentscount;
+    private boolean islike;
 
     public long getLikes() {
         return likes;
@@ -24,11 +25,20 @@ public class PostInfo {
         this.commentscount = commentscount;
     }
 
+    public boolean isIslike() {
+        return islike;
+    }
+
+    public void setIslike(boolean islike) {
+        this.islike = islike;
+    }
+
     public PostInfo() {
     }
 
-    public PostInfo(long likes, long commentscount) {
+    public PostInfo(long likes, long commentscount, boolean islike) {
         this.likes = likes;
         this.commentscount = commentscount;
+        this.islike = islike;
     }
 }

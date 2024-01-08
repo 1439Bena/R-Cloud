@@ -36,9 +36,9 @@ public class PostController extends BaseController {
     }
 
     @RequestMapping("/GetLikeAndComment")
-    protected String GetLikeAndComment(@RequestParam("pid") String pid) throws IOException {
+    protected String GetLikeAndComment(@RequestParam("pid") String pid,@RequestParam("uid") String uid) throws IOException {
 
-        PostInfo postInfo = new PostInfoService().selectLikesAndCommentsCount(pid);
+        PostInfo postInfo = new PostInfoService().selectLikesAndCommentsCount(pid,uid);
 
         return print(successJson(postInfo));
     }
